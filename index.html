@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b4f8a">
+<title>Jornada Segura · Los Olivos — Prototipo MVP</title>
+<link rel="stylesheet" href="vendor/bootstrap.min.css">
+<link rel="stylesheet" href="vendor/bootstrap-icons.css">
+<style>
+/* ===== Tipografía local (funciona sin internet) ===== */
+@font-face{
+  font-family:'Fraunces';src:url('vendor/fonts/fraunces-var.woff2') format('woff2');
+  font-weight:100 900;font-style:normal;font-display:swap;
+}
+@font-face{
+  font-family:'Jakarta';src:url('vendor/fonts/jakarta-var.woff2') format('woff2');
+  font-weight:200 800;font-style:normal;font-display:swap;
+}
+</style>
+<style>
+:root{
+  --js-azul:#0b4f8a; --js-azul-2:#1273c9; --js-verde:#15803d;
+  --js-naranja:#c2410c; --js-rojo:#b91c1c; --js-ambar:#b45309;
+  --f-display:'Fraunces',Georgia,'Times New Roman',serif;
+  --f-texto:'Jakarta','Segoe UI',system-ui,-apple-system,sans-serif;
+}
+body{background:#eceff3;font-family:var(--f-texto);font-size:15px;
+  font-feature-settings:'cv11','ss01';-webkit-tap-highlight-color:transparent}
+h1,h2,h3,h4,h5,.marca,.cifra,.titulo-pant,.monto,.medalla .tt,.estimado .m{
+  font-family:var(--f-display);font-optical-sizing:auto;letter-spacing:-.015em}
+/* Fraunces en títulos: peso alto y un toque de 'soft' óptico */
+.titulo-pant,.hero h1,.marca{font-weight:600}
+.cifra,.monto,.estimado .m,.medalla .tt,.pin-num{font-weight:600;font-variant-numeric:tabular-nums}
+.rotulo{font-family:var(--f-texto)}
+.btn,.form-control,.form-select,.badge,.table-js,.tabbar button{font-family:var(--f-texto)}
+
+/* ===== Contenedor tipo app móvil ===== */
+.app-shell{max-width:520px;margin:0 auto;background:#fff;min-height:100vh;
+  box-shadow:0 0 28px rgba(15,23,42,.1);position:relative;padding-bottom:78px}
+@media(min-width:992px){
+  .app-shell{max-width:560px;min-height:calc(100vh - 56px);margin:28px auto;border-radius:20px;overflow:hidden}
+  body{padding-bottom:28px}
+}
+
+/* ===== Cabecera ===== */
+.js-header{background:linear-gradient(135deg,var(--js-azul),var(--js-azul-2));color:#fff;
+  padding:.65rem 1rem;position:sticky;top:0;z-index:1030}
+.marca{font-size:1.1rem;letter-spacing:-.01em;line-height:1.15}
+.marca small{font-family:var(--f-texto);font-weight:500;font-size:.66rem;opacity:.85;display:block;letter-spacing:.04em;text-transform:uppercase}
+.btn-sos{--bs-btn-padding-y:.3rem;--bs-btn-padding-x:.6rem;--bs-btn-font-size:.78rem;font-weight:700}
+
+/* ===== Barra de navegación inferior ===== */
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:1040;background:#fff;
+  border-top:1px solid #dee2e6;display:flex;max-width:520px;margin:0 auto;
+  padding-bottom:env(safe-area-inset-bottom)}
+@media(min-width:992px){.tabbar{max-width:560px;position:sticky;border-radius:0 0 20px 20px}}
+.tabbar button{flex:1;border:0;background:none;padding:.5rem .15rem .55rem;
+  color:#6c757d;font-size:.62rem;font-weight:600;line-height:1.25;letter-spacing:.1px}
+.tabbar button i{display:block;font-size:1.22rem;margin-bottom:.08rem}
+.tabbar button.activo{color:var(--js-azul-2)}
+.tabbar button.activo i{transform:translateY(-1px)}
+
+/* ===== Pantallas ===== */
+.pantalla{display:none;padding:1rem}
+.pantalla.activa{display:block;animation:entra .22s ease}
+@keyframes entra{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+.titulo-pant{font-size:1.3rem;margin-bottom:.1rem}
+.bajada{font-size:.82rem;color:#6c757d;margin-bottom:1rem}
+.rotulo{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#6c757d;margin-bottom:.5rem}
+
+/* ===== Hero ===== */
+.hero{background:linear-gradient(140deg,#0b4f8a,#1273c9);color:#fff;
+  border-radius:16px;padding:1.2rem;margin-bottom:1.1rem}
+.hero h1{font-size:1.5rem;line-height:1.2;margin-bottom:.45rem;letter-spacing:-.02em}
+.hero p{font-size:.82rem;opacity:.92;margin-bottom:.9rem}
+
+/* ===== Especialidades ===== */
+.esp-btn{width:100%;background:#fff;border:1.5px solid #dee2e6;border-radius:14px;
+  padding:.85rem .4rem;text-align:center;transition:.14s}
+.esp-btn:active{transform:scale(.97)}
+.esp-btn i{font-size:1.65rem;color:var(--js-azul-2);display:block;margin-bottom:.25rem}
+.esp-btn .n{font-weight:700;font-size:.8rem;display:block;line-height:1.2}
+.esp-btn .c{font-size:.68rem;color:#6c757d}
+
+/* ===== Tarjetas de técnico ===== */
+.avatar{border-radius:50%;background:linear-gradient(135deg,#7a8899,#5a6775);color:#fff;
+  display:grid;place-items:center;font-weight:700;flex-shrink:0;font-family:var(--f-display)}
+.av-sm{width:46px;height:46px;font-size:.95rem}
+.av-md{width:52px;height:52px;font-size:1.02rem}
+.av-lg{width:76px;height:76px;font-size:1.5rem;background:linear-gradient(135deg,var(--js-azul),var(--js-azul-2))}
+.card-tec{border:1px solid #e4e8ed;border-radius:14px;padding:.8rem;margin-bottom:.65rem;transition:.14s}
+.card-tec:active{background:#f8f9fa}
+.nom-tec{font-weight:700;font-size:.92rem;line-height:1.25}
+.dato{font-size:.74rem;color:#6c757d;line-height:1.45}
+.estrellas{color:#d97706;font-size:.78rem;letter-spacing:-.5px}
+.badge-js{font-size:.62rem;font-weight:700;padding:.2rem .45rem;letter-spacing:.2px}
+.monto{color:var(--js-azul);font-size:1.05rem}
+.monto-u{font-size:.64rem;color:#6c757d;display:block;line-height:1.1}
+
+/* ===== Mapa ===== */
+.mapa-box{border:1px solid #e4e8ed;border-radius:14px;overflow:hidden;position:relative;background:#e9f0e6}
+.mapa-box svg{display:block;width:100%;height:auto}
+.pin{cursor:pointer}
+.pin:active circle{r:11}
+
+/* ===== Cifras / KPI ===== */
+.kpi{background:#f1f4f8;border-radius:12px;padding:.7rem .6rem;height:100%}
+.cifra{font-size:1.3rem;color:var(--js-azul);line-height:1.1}
+.kpi .l{font-size:.67rem;color:#6c757d;line-height:1.3}
+
+/* ===== Verificación ===== */
+.verif{background:#e9f7ef;border:1px solid #a7dfbd;border-radius:14px;padding:.85rem}
+.verif li{font-size:.78rem;color:#145c32;padding:.12rem 0;list-style:none}
+.verif li i{color:var(--js-verde)}
+
+/* ===== Tabla ===== */
+.table-js{font-size:.78rem;margin:0}
+.table-js th{background:#f1f4f8;font-size:.66rem;text-transform:uppercase;letter-spacing:.4px;
+  color:#6c757d;font-weight:700;white-space:nowrap;vertical-align:middle}
+.table-js td{vertical-align:middle}
+.table-js .n{text-align:right;font-weight:700;color:var(--js-azul);white-space:nowrap}
+
+/* ===== Cotizador ===== */
+.estimado{background:#fff;border:2px dashed var(--js-azul-2);border-radius:14px;padding:.9rem;text-align:center}
+.estimado .m{font-size:1.8rem;color:var(--js-azul);line-height:1.1}
+
+/* ===== PIN / QR ===== */
+.pin-num{font-size:2.5rem;letter-spacing:.5rem;color:var(--js-azul);
+  font-family:var(--f-display);line-height:1.2;padding-left:.5rem}
+.qr{width:134px;height:134px}
+.pasos{display:flex;gap:.3rem;margin-bottom:1rem}
+.paso{flex:1;border-radius:9px;padding:.4rem .2rem;font-size:.62rem;text-align:center;
+  background:#f1f4f8;color:#6c757d;font-weight:700;line-height:1.25}
+.paso.on{background:var(--js-azul);color:#fff}
+.paso.ok{background:#e9f7ef;color:var(--js-verde)}
+
+/* ===== Reseñas ===== */
+.resena{border:1px solid #e4e8ed;border-radius:14px;padding:.8rem;margin-bottom:.65rem}
+.foto-ev{height:74px;border-radius:9px;display:grid;place-items:center;color:#fff;
+  font-size:.62rem;font-weight:600;text-align:center;padding:.3rem;line-height:1.2}
+.barra{height:6px;border-radius:4px;background:#e9ecef;overflow:hidden}
+.barra span{display:block;height:100%;border-radius:4px}
+
+/* ===== Vista técnico ===== */
+.notif{background:#fff;border:1px solid #f3cfae;border-radius:13px;padding:.75rem;
+  margin-bottom:.6rem;animation:entra .25s}
+.notif .t{font-weight:700;font-size:.82rem;line-height:1.3}
+.notif .d{font-size:.72rem;color:#6c757d;line-height:1.4}
+.medalla{background:linear-gradient(135deg,#d49a1a,#b45309);color:#fff;border-radius:14px;
+  padding:.95rem;text-align:center}
+.medalla i{font-size:1.9rem}
+.medalla .tt{font-size:1.05rem}
+
+.aviso{background:#fdf6ec;border:1px solid #f0d9b5;border-radius:12px;
+  padding:.65rem .8rem;font-size:.75rem;color:#7a4510;line-height:1.45}
+.volver{font-size:.78rem;font-weight:600;padding:0;margin-bottom:.6rem}
+hr.sep{margin:1.25rem 0;opacity:.12}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ===== Cabecera ===== -->
+  <header class="js-header d-flex align-items-center gap-2">
+    <i class="bi bi-shield-check fs-4"></i>
+    <div class="marca flex-grow-1">Jornada Segura<small>Los Olivos · servicios verificados</small></div>
+    <button class="btn btn-danger btn-sos" data-bs-toggle="modal" data-bs-target="#modalSOS">
+      <i class="bi bi-exclamation-triangle-fill"></i> SOS
+    </button>
+  </header>
+
+  <!-- ============ 1. INICIO ============ -->
+  <section class="pantalla activa" id="inicio">
+    <div class="hero">
+      <h1>Técnicos verificados de tu distrito en menos de 30 minutos</h1>
+      <p>Antecedentes auditados por DNI. Tarifas fijas por jornada. Reseñas de tus propios vecinos.</p>
+      <div class="bg-white rounded-3 p-2">
+        <div class="input-group input-group-sm mb-2">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-secondary"></i></span>
+          <input class="form-control border-start-0 ps-0" placeholder="Fuga de agua, pintar sala...">
+        </div>
+        <div class="d-flex gap-2">
+          <select class="form-select form-select-sm">
+            <option>Toda Los Olivos</option><option>Urb. Pro</option><option>Av. Izaguirre</option>
+            <option>Covida</option><option>Antúnez de Mayolo</option><option>Las Palmeras</option>
+          </select>
+          <button class="btn btn-sm text-white fw-bold px-3" style="background:var(--js-naranja)" onclick="ir('resultados')">Buscar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="rotulo">Busca por especialidad</div>
+    <div class="row g-2 mb-4">
+      <div class="col-6"><button class="esp-btn" onclick="ir('resultados')"><i class="bi bi-bricks"></i><span class="n">Albañilería</span><span class="c">28 técnicos</span></button></div>
+      <div class="col-6"><button class="esp-btn" onclick="ir('resultados')"><i class="bi bi-droplet-half"></i><span class="n">Gasfitería</span><span class="c">24 técnicos</span></button></div>
+      <div class="col-6"><button class="esp-btn" onclick="ir('resultados')"><i class="bi bi-lightning-charge"></i><span class="n">Electricidad</span><span class="c">31 técnicos</span></button></div>
+      <div class="col-6"><button class="esp-btn" onclick="ir('resultados')"><i class="bi bi-brush"></i><span class="n">Pintura</span><span class="c">17 técnicos</span></button></div>
+    </div>
+
+    <div class="rotulo">Cómo funciona</div>
+    <div class="list-group list-group-flush mb-4">
+      <div class="list-group-item d-flex gap-3 px-0 border-0 pb-2">
+        <i class="bi bi-1-circle-fill fs-5" style="color:var(--js-azul-2)"></i>
+        <div><div class="fw-bold" style="font-size:.86rem">Elige y compara</div><div class="dato">Filtra por especialidad y revisa el perfil verificado de cada técnico.</div></div>
+      </div>
+      <div class="list-group-item d-flex gap-3 px-0 border-0 pb-2">
+        <i class="bi bi-2-circle-fill fs-5" style="color:var(--js-azul-2)"></i>
+        <div><div class="fw-bold" style="font-size:.86rem">Confirma en la puerta</div><div class="dato">Valida la identidad con un PIN dinámico antes de que empiece la jornada.</div></div>
+      </div>
+      <div class="list-group-item d-flex gap-3 px-0 border-0">
+        <i class="bi bi-3-circle-fill fs-5" style="color:var(--js-azul-2)"></i>
+        <div><div class="fw-bold" style="font-size:.86rem">Califica con evidencia</div><div class="dato">Publica estrellas y fotos del trabajo terminado para tus vecinos.</div></div>
+      </div>
+    </div>
+
+    <div class="rotulo">Metas del piloto a 12 semanas</div>
+    <div class="row g-2">
+      <div class="col-6"><div class="kpi"><div class="cifra">100</div><div class="l">Técnicos verificados</div></div></div>
+      <div class="col-6"><div class="kpi"><div class="cifra">30</div><div class="l">Contrataciones exitosas</div></div></div>
+      <div class="col-6"><div class="kpi"><div class="cifra">&lt;30 min</div><div class="l">Tiempo de contratación</div></div></div>
+      <div class="col-6"><div class="kpi"><div class="cifra">8 a 10%</div><div class="l">Comisión por servicio</div></div></div>
+    </div>
+  </section>
+
+  <!-- ============ 2. RESULTADOS ============ -->
+  <section class="pantalla" id="resultados">
+    <button class="btn btn-link volver" onclick="ir('inicio')"><i class="bi bi-chevron-left"></i> Inicio</button>
+    <div class="titulo-pant">Albañilería en Los Olivos</div>
+    <div class="bajada">6 técnicos disponibles hoy, ordenados por cercanía y reputación</div>
+
+    <div class="mapa-box mb-3">
+      <div class="px-3 py-2 bg-white border-bottom d-flex align-items-center gap-2">
+        <i class="bi bi-geo-alt-fill" style="color:var(--js-azul-2)"></i>
+        <span class="fw-bold" style="font-size:.78rem">Técnicos cerca de tu domicilio</span>
+      </div>
+      <svg viewBox="0 0 400 300">
+        <rect width="400" height="300" fill="#e9f0e6"/>
+        <rect x="0" y="80" width="400" height="14" fill="#c9d2dc"/>
+        <rect x="0" y="165" width="400" height="14" fill="#c9d2dc"/>
+        <rect x="0" y="243" width="400" height="11" fill="#d5dce5"/>
+        <rect x="100" y="0" width="14" height="300" fill="#c9d2dc"/>
+        <rect x="258" y="0" width="14" height="300" fill="#c9d2dc"/>
+        <text x="5" y="77" font-size="8.5" fill="#495057">Av. Izaguirre</text>
+        <text x="5" y="162" font-size="8.5" fill="#495057">Av. Antúnez de Mayolo</text>
+        <text x="5" y="240" font-size="8.5" fill="#495057">Av. Las Palmeras</text>
+        <text x="118" y="294" font-size="8.5" fill="#495057">Urb. Pro</text>
+        <text x="276" y="294" font-size="8.5" fill="#495057">Covida</text>
+        <circle cx="200" cy="128" r="25" fill="#1273c9" opacity=".13"/>
+        <circle cx="200" cy="128" r="7.5" fill="#1273c9" stroke="#fff" stroke-width="2.5"/>
+        <text x="211" y="125" font-size="9" font-weight="bold" fill="#0b4f8a">Tu casa</text>
+        <g id="pines"></g>
+      </svg>
+      <div class="px-3 py-2 bg-white border-top d-flex gap-3 flex-wrap" style="font-size:.68rem">
+        <span><i class="bi bi-circle-fill" style="color:#b45309"></i> Súper Técnico</span>
+        <span><i class="bi bi-circle-fill" style="color:#15803d"></i> Verificado</span>
+        <span><i class="bi bi-circle-fill" style="color:#1273c9"></i> Tu ubicación</span>
+      </div>
+    </div>
+
+    <div id="lista-tec"></div>
+  </section>
+
+  <!-- ============ 3. PERFIL ============ -->
+  <section class="pantalla" id="perfil">
+    <button class="btn btn-link volver" onclick="ir('resultados')"><i class="bi bi-chevron-left"></i> Resultados</button>
+
+    <div class="d-flex gap-3 align-items-center mb-3">
+      <div class="avatar av-lg">CR</div>
+      <div class="flex-grow-1">
+        <div style="font-size:1.12rem;line-height:1.2;font-family:var(--f-display);font-weight:600">Carlos Ramos Quispe</div>
+        <div class="dato">Albañil · 12 años de experiencia</div>
+        <div class="dato"><i class="bi bi-geo-alt"></i> Urb. Pro, Los Olivos</div>
+        <div class="estrellas mt-1">
+          <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+          <span class="text-secondary ms-1">4.9 · 47 reseñas</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-1 flex-wrap mb-3">
+      <span class="badge badge-js text-bg-success"><i class="bi bi-patch-check-fill"></i> Técnico verificado</span>
+      <span class="badge badge-js text-bg-warning"><i class="bi bi-award-fill"></i> Súper Técnico</span>
+      <span class="badge badge-js text-bg-primary"><i class="bi bi-clock-fill"></i> Responde en 8 min</span>
+    </div>
+
+    <div class="verif mb-3">
+      <div class="fw-bold mb-2" style="color:var(--js-verde);font-size:.84rem">
+        <i class="bi bi-shield-fill-check"></i> Verificación auditada al 02/11/2026
+      </div>
+      <ul class="mb-0 ps-0">
+        <li><i class="bi bi-check-circle-fill"></i> Identidad validada con DNI 0&bull;&bull;&bull;&bull;&bull;84 (RENIEC)</li>
+        <li><i class="bi bi-check-circle-fill"></i> Antecedentes penales: sin registros</li>
+        <li><i class="bi bi-check-circle-fill"></i> Antecedentes policiales: sin registros</li>
+        <li><i class="bi bi-check-circle-fill"></i> Domicilio confirmado en Los Olivos</li>
+      </ul>
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col-6"><div class="kpi"><div class="l">Jornada completa 8 h</div><div class="cifra">S/ 130</div></div></div>
+      <div class="col-6"><div class="kpi"><div class="l">Media jornada 4 h</div><div class="cifra">S/ 75</div></div></div>
+      <div class="col-6"><div class="kpi"><div class="l">Obras concluidas</div><div class="cifra">47</div></div></div>
+      <div class="col-6"><div class="kpi"><div class="l">Puntualidad</div><div class="cifra">98%</div></div></div>
+    </div>
+
+    <div class="rotulo">Trabajos que ejecuta por jornada</div>
+    <div class="d-flex gap-1 flex-wrap mb-3">
+      <span class="badge badge-js text-bg-light border">Tarrajeo y resane de muros</span>
+      <span class="badge badge-js text-bg-light border">Enchape de pisos y baños</span>
+      <span class="badge badge-js text-bg-light border">Construcción de tabiquería</span>
+      <span class="badge badge-js text-bg-light border">Reparación de filtraciones</span>
+    </div>
+
+    <button class="btn btn-link volver mb-3" onclick="ir('resenas')">
+      Ver las 47 reseñas con evidencia fotográfica <i class="bi bi-chevron-right"></i>
+    </button>
+
+    <div class="d-grid">
+      <button class="btn btn-lg fw-bold text-white" style="background:var(--js-azul)" onclick="ir('contratar')">
+        <i class="bi bi-calendar-check"></i> Contratar jornada
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ 4. TARIFAS ============ -->
+  <section class="pantalla" id="tarifas">
+    <div class="titulo-pant">Tarifas referenciales 2026</div>
+    <div class="bajada">Rangos publicados por la plataforma para erradicar el regateo y las tarifas ocultas</div>
+
+    <div class="table-responsive border rounded-3 mb-2">
+      <table class="table table-js table-striped mb-0">
+        <thead><tr><th>Especialidad</th><th class="text-end">4 h</th><th class="text-end">8 h</th><th class="text-end">SOS</th></tr></thead>
+        <tbody>
+          <tr><td><i class="bi bi-bricks me-1 text-secondary"></i>Albañilería</td><td class="n">70 a 85</td><td class="n">120 a 150</td><td class="n">+30%</td></tr>
+          <tr><td><i class="bi bi-droplet-half me-1 text-secondary"></i>Gasfitería</td><td class="n">75 a 95</td><td class="n">130 a 165</td><td class="n">+35%</td></tr>
+          <tr><td><i class="bi bi-lightning-charge me-1 text-secondary"></i>Electricidad</td><td class="n">80 a 100</td><td class="n">140 a 180</td><td class="n">+35%</td></tr>
+          <tr><td><i class="bi bi-brush me-1 text-secondary"></i>Pintura</td><td class="n">60 a 80</td><td class="n">110 a 140</td><td class="n">+25%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="aviso mb-4"><i class="bi bi-info-circle-fill"></i> Montos en soles y por jornada. Los materiales no están incluidos. La plataforma retiene entre 8% y 10% de comisión.</div>
+
+    <div class="rotulo">Cotizador integrado</div>
+    <div class="bg-light border rounded-3 p-3 mb-4">
+      <div class="mb-2">
+        <label class="form-label fw-bold" style="font-size:.76rem">Tipo de avería o trabajo</label>
+        <select class="form-select form-select-sm" id="c-tipo">
+          <option data-min="120" data-max="150">Albañilería: resane o tarrajeo</option>
+          <option data-min="130" data-max="165">Gasfitería: fuga o desatoro</option>
+          <option data-min="140" data-max="180">Electricidad: cortocircuito o puntos</option>
+          <option data-min="110" data-max="140">Pintura: ambiente interior</option>
+        </select>
+      </div>
+      <div class="row g-2 mb-3">
+        <div class="col-6">
+          <label class="form-label fw-bold" style="font-size:.76rem">Duración</label>
+          <select class="form-select form-select-sm" id="c-dur">
+            <option value="1">Jornada 8 h</option><option value="0.58">Media 4 h</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label class="form-label fw-bold" style="font-size:.76rem">Urgencia</label>
+          <select class="form-select form-select-sm" id="c-urg">
+            <option value="1">Programada</option><option value="1.3">Emergencia</option>
+          </select>
+        </div>
+      </div>
+      <div class="d-grid mb-3">
+        <button class="btn fw-bold text-white" style="background:var(--js-azul)" onclick="cotizar()">
+          <i class="bi bi-calculator"></i> Calcular estimado
+        </button>
+      </div>
+      <div class="estimado d-none" id="c-res">
+        <div class="text-secondary" style="font-size:.7rem">Estimado referencial</div>
+        <div class="m" id="c-monto">—</div>
+        <div class="text-secondary" style="font-size:.7rem" id="c-det"></div>
+      </div>
+    </div>
+
+    <div class="rotulo">Por qué tarifas fijas</div>
+    <div class="accordion accordion-flush border rounded-3 overflow-hidden" id="acPorque">
+      <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-2" style="font-size:.84rem" data-bs-toggle="collapse" data-bs-target="#aq1">Para el vecino</button></h2>
+        <div id="aq1" class="accordion-collapse collapse" data-bs-parent="#acPorque">
+          <div class="accordion-body dato">Sabe cuánto pagará antes de que el técnico llegue. No hay sobrecostos sorpresa al terminar la obra.</div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-2" style="font-size:.84rem" data-bs-toggle="collapse" data-bs-target="#aq2">Para el técnico</button></h2>
+        <div id="aq2" class="accordion-collapse collapse" data-bs-parent="#acPorque">
+          <div class="accordion-body dato">Elimina el regateo abusivo. Su jornada vale lo mismo en toda la plataforma, sin importar quién lo contrate.</div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed py-2" style="font-size:.84rem" data-bs-toggle="collapse" data-bs-target="#aq3">Para la plataforma</button></h2>
+        <div id="aq3" class="accordion-collapse collapse" data-bs-parent="#acPorque">
+          <div class="accordion-body dato">La transparencia tarifaria es el atributo diferenciador frente a los grupos informales de Facebook y WhatsApp.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 5. CONTRATACIÓN ============ -->
+  <section class="pantalla" id="contratar">
+    <button class="btn btn-link volver" onclick="ir('perfil')"><i class="bi bi-chevron-left"></i> Perfil</button>
+    <div class="titulo-pant">Contratar jornada</div>
+    <div class="bajada">Carlos Ramos Quispe · albañilería</div>
+
+    <div class="pasos">
+      <div class="paso ok" id="p1"><i class="bi bi-check"></i> Técnico</div>
+      <div class="paso ok" id="p2"><i class="bi bi-check"></i> Fecha</div>
+      <div class="paso on" id="p3">Confirmación</div>
+      <div class="paso" id="p4">Calificación</div>
+    </div>
+
+    <div class="border rounded-3 p-3 mb-3">
+      <div class="rotulo mb-2">Resumen de la solicitud</div>
+      <div class="d-flex justify-content-between py-1" style="font-size:.8rem"><span class="text-secondary">Servicio</span><span class="fw-bold text-end">Resane de muro, sala</span></div>
+      <div class="d-flex justify-content-between py-1" style="font-size:.8rem"><span class="text-secondary">Fecha</span><span class="fw-bold text-end">Jue 06/11/2026, 8:00 a. m.</span></div>
+      <div class="d-flex justify-content-between py-1" style="font-size:.8rem"><span class="text-secondary">Modalidad</span><span class="fw-bold text-end">Jornada completa, 8 h</span></div>
+      <div class="d-flex justify-content-between py-1" style="font-size:.8rem"><span class="text-secondary">Dirección</span><span class="fw-bold text-end">Urb. Covida, Los Olivos</span></div>
+      <hr class="my-2">
+      <div class="d-flex justify-content-between align-items-center"><span class="fw-bold" style="font-size:.86rem">Total a pagar</span><span class="monto" style="font-size:1.3rem">S/ 130.00</span></div>
+    </div>
+
+    <div class="aviso mb-3"><i class="bi bi-lock-fill"></i> El pago se libera al técnico recién cuando usted confirma la culminación del trabajo.</div>
+
+    <div class="border rounded-3 p-3 text-center">
+      <div class="rotulo">Código de confirmación seguro</div>
+      <div class="dato mb-2">Muéstrelo al técnico cuando llegue a su puerta</div>
+      <div class="pin-num">4729</div>
+      <svg class="qr my-2" viewBox="0 0 21 21" shape-rendering="crispEdges">
+        <rect width="21" height="21" fill="#fff"/><g fill="#0f172a" id="qr-g"></g>
+      </svg>
+      <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+        <div class="avatar av-sm" style="width:34px;height:34px;font-size:.76rem">CR</div>
+        <div class="text-start" style="font-size:.74rem"><div class="fw-bold">Carlos Ramos Q.</div><div class="text-secondary">Compare el rostro con el perfil</div></div>
+      </div>
+      <div class="dato mb-3">El código cambia en cada servicio y expira a las 2 horas.</div>
+      <div class="d-grid">
+        <button class="btn btn-success fw-bold" onclick="confirmarLlegada()"><i class="bi bi-qr-code-scan"></i> Simular validación del PIN</button>
+      </div>
+      <div class="alert alert-success mt-3 mb-0 d-none py-2" id="msg-pin" style="font-size:.78rem">
+        <i class="bi bi-check-circle-fill"></i> Identidad confirmada en la puerta. Jornada iniciada a las 8:03 a. m.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. RESEÑAS ============ -->
+  <section class="pantalla" id="resenas">
+    <button class="btn btn-link volver" onclick="ir('perfil')"><i class="bi bi-chevron-left"></i> Perfil</button>
+    <div class="titulo-pant">Reseñas con evidencia</div>
+    <div class="bajada">Estrellas más fotografías del trabajo terminado, publicadas por vecinos del distrito</div>
+
+    <div class="border rounded-3 p-3 mb-3 d-flex gap-3 align-items-center">
+      <div class="text-center flex-shrink-0">
+        <div class="cifra" style="font-size:2rem">4.9</div>
+        <div class="estrellas"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
+        <div class="dato">47 reseñas</div>
+      </div>
+      <div class="flex-grow-1" id="distrib"></div>
+    </div>
+
+    <div class="aviso mb-3"><i class="bi bi-arrow-left-right"></i> La reputación es bidireccional: el técnico también califica al vecino por claridad del encargo, trato y puntualidad del pago.</div>
+
+    <div id="lista-resenas"></div>
+  </section>
+
+  <!-- ============ 7. VISTA TÉCNICO ============ -->
+  <section class="pantalla" id="tecnico">
+    <div class="titulo-pant">Vista del técnico</div>
+    <div class="bajada">Notificaciones en tiempo real, geolocalización por cercanía y reputación acumulada</div>
+
+    <div class="d-flex align-items-center gap-2 mb-3 pb-3 border-bottom">
+      <div class="avatar av-md">CR</div>
+      <div class="flex-grow-1">
+        <div class="fw-bold" style="font-size:.92rem">Carlos Ramos</div>
+        <div class="dato">Albañil · Urb. Pro</div>
+      </div>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="disp" checked>
+        <label class="form-check-label dato" for="disp">Disponible</label>
+      </div>
+    </div>
+
+    <div class="medalla mb-3">
+      <i class="bi bi-award-fill"></i>
+      <div class="tt">Súper Técnico</div>
+      <div style="font-size:.74rem;opacity:.95">10 de 10 obras calificadas con 5 estrellas</div>
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col-4"><div class="kpi text-center"><div class="cifra" style="color:var(--js-verde)">S/ 520</div><div class="l">Semana</div></div></div>
+      <div class="col-4"><div class="kpi text-center"><div class="cifra">4</div><div class="l">Jornadas</div></div></div>
+      <div class="col-4"><div class="kpi text-center"><div class="cifra">98%</div><div class="l">Puntual</div></div></div>
+    </div>
+
+    <div class="rotulo">Solicitudes cercanas</div>
+    <div id="notifs"></div>
+    <div class="d-grid">
+      <button class="btn btn-outline-primary btn-sm fw-bold" onclick="pintarNotif()">
+        <i class="bi bi-plus-circle"></i> Simular nueva solicitud
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== Navegación inferior ===== -->
+  <nav class="tabbar">
+    <button class="activo" data-go="inicio"><i class="bi bi-house-door-fill"></i>Inicio</button>
+    <button data-go="resultados"><i class="bi bi-geo-alt-fill"></i>Buscar</button>
+    <button data-go="tarifas"><i class="bi bi-cash-coin"></i>Tarifas</button>
+    <button data-go="contratar"><i class="bi bi-qr-code"></i>Contratar</button>
+    <button data-go="resenas"><i class="bi bi-star-fill"></i>Reseñas</button>
+    <button data-go="tecnico"><i class="bi bi-person-badge-fill"></i>Técnico</button>
+  </nav>
+</div>
+
+<!-- ===== Modal SOS ===== -->
+<div class="modal fade" id="modalSOS" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 rounded-4">
+      <div class="modal-header border-0 pb-1">
+        <h5 class="modal-title text-danger fw-bold" style="font-size:1.05rem">
+          <i class="bi bi-exclamation-triangle-fill"></i> Alerta de emergencia
+        </h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-1">
+        <p class="dato mb-3">Atención prioritaria garantizada en menos de 2 horas. Aplica el recargo del tabulador.</p>
+        <div class="mb-2">
+          <label class="form-label fw-bold" style="font-size:.76rem">Tipo de urgencia</label>
+          <select class="form-select form-select-sm">
+            <option>Fuga de agua o inundación</option><option>Cortocircuito o falta de energía</option>
+            <option>Desatoro de desagüe</option><option>Puerta o cerradura forzada</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-bold" style="font-size:.76rem">Dirección exacta</label>
+          <input class="form-control form-control-sm" value="Urb. Covida, Mz. H Lt. 12, Los Olivos">
+        </div>
+        <div class="alert alert-success d-none py-2 mb-0 mt-3" id="sos-ok" style="font-size:.78rem">
+          <i class="bi bi-check-circle-fill"></i> Alerta enviada a 7 técnicos verificados a menos de 1.5 km. Llegada estimada: 38 minutos.
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button class="btn btn-light btn-sm" data-bs-dismiss="modal">Cerrar</button>
+        <button class="btn btn-danger btn-sm fw-bold" onclick="document.getElementById('sos-ok').classList.remove('d-none')">
+          <i class="bi bi-send-fill"></i> Enviar alerta
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/bootstrap.bundle.min.js"></script>
+<script>
+/* ===== Datos ficticios del prototipo ===== */
+const TECNICOS=[
+ {ini:'CR',nom:'Carlos Ramos Quispe',esp:'Albañil, 12 años',zona:'Urb. Pro, a 0.8 km',est:4.9,n:47,jor:130,sup:true,x:150,y:100},
+ {ini:'JM',nom:'Julio Mendoza Flores',esp:'Albañil, 8 años',zona:'Covida, a 1.1 km',est:4.7,n:31,jor:125,sup:false,x:292,y:142},
+ {ini:'ET',nom:'Elena Torres Vega',esp:'Albañil, 6 años',zona:'Av. Izaguirre, a 1.4 km',est:4.8,n:22,jor:135,sup:false,x:82,y:182},
+ {ini:'RS',nom:'Raúl Salazar Pinto',esp:'Albañil, 15 años',zona:'Las Palmeras, a 1.9 km',est:4.5,n:58,jor:145,sup:true,x:322,y:220},
+ {ini:'MH',nom:'Marco Huamán Ríos',esp:'Albañil, 4 años',zona:'Antúnez de Mayolo, a 2.2 km',est:4.4,n:12,jor:120,sup:false,x:205,y:58},
+ {ini:'DC',nom:'Diego Castro Luna',esp:'Albañil, 9 años',zona:'Sol de Oro, a 2.6 km',est:4.6,n:26,jor:128,sup:false,x:58,y:258},
+];
+const RESENAS=[
+ {aut:'Rosa M.',zona:'Covida',est:5,fec:'28/10/2026',txt:'Excelente servicio. Llegó puntual a las 8, dejó el muro impecable y limpió todo antes de irse. El precio fue exactamente el que figuraba en la plataforma.',f:[['Antes del resane','#5a6775'],['Después del resane','#15803d']]},
+ {aut:'Luis S.',zona:'Urb. Pro',est:5,fec:'19/10/2026',txt:'Contraté media jornada para un enchape de baño. Verifiqué su identidad con el PIN en la puerta y todo tranquilo. Trabajo de primera.',f:[['Enchape terminado','#1273c9']]},
+ {aut:'Carmen T.',zona:'Las Palmeras',est:4,fec:'11/10/2026',txt:'Muy buen acabado en la tabiquería. Resté una estrella porque se extendió 40 minutos más de la jornada, aunque no cobró extra por ello.',f:[['Tabiquería','#c2410c'],['Detalle de junta','#5a6775']]},
+];
+const SOLICITUDES=[
+ {t:'Resane de pared, Urb. Covida',d:'Jornada completa · S/ 130 · a 1.2 km',sos:false},
+ {t:'Enchape de baño completo, Urb. Pro',d:'Jornada completa · S/ 130 · a 0.6 km',sos:false},
+ {t:'Filtración en techo, Av. Izaguirre',d:'Media jornada · S/ 98 con recargo · a 1.8 km',sos:true},
+ {t:'Construcción de tabique, Sol de Oro',d:'Jornada completa · S/ 130 · a 2.4 km',sos:false},
+];
+let iNotif=0;
+
+/* ===== Navegación ===== */
+function ir(id){
+  document.querySelectorAll('.pantalla').forEach(s=>s.classList.toggle('activa',s.id===id));
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('activo',b.dataset.go===id));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.tabbar button').forEach(b=>b.onclick=()=>ir(b.dataset.go));
+
+/* ===== Helpers ===== */
+const estrellas=n=>{const f=Math.round(n);return '<i class="bi bi-star-fill"></i>'.repeat(f)+'<i class="bi bi-star"></i>'.repeat(5-f);};
+
+/* ===== Lista de técnicos ===== */
+document.getElementById('lista-tec').innerHTML=TECNICOS.map(t=>`
+ <div class="card-tec" onclick="ir('perfil')">
+   <div class="d-flex gap-2">
+     <div class="avatar av-md">${t.ini}</div>
+     <div class="flex-grow-1 min-w-0">
+       <div class="nom-tec">${t.nom}</div>
+       <div class="d-flex gap-1 flex-wrap my-1">
+         <span class="badge badge-js text-bg-success"><i class="bi bi-patch-check-fill"></i> Verificado</span>
+         ${t.sup?'<span class="badge badge-js text-bg-warning"><i class="bi bi-award-fill"></i> Súper Técnico</span>':''}
+       </div>
+       <div class="dato">${t.esp}</div>
+       <div class="dato"><i class="bi bi-geo-alt"></i> ${t.zona}</div>
+       <div class="estrellas">${estrellas(t.est)} <span class="text-secondary">${t.est} · ${t.n} reseñas</span></div>
+     </div>
+     <div class="text-end flex-shrink-0">
+       <span class="monto">S/ ${t.jor}</span><span class="monto-u">jornada 8 h</span>
+       <i class="bi bi-chevron-right text-secondary mt-2 d-block"></i>
+     </div>
+   </div>
+ </div>`).join('');
+
+/* ===== Pines del mapa ===== */
+document.getElementById('pines').innerHTML=TECNICOS.map(t=>`
+ <g class="pin" onclick="ir('perfil')">
+   <circle cx="${t.x}" cy="${t.y}" r="8.5" fill="${t.sup?'#b45309':'#15803d'}" stroke="#fff" stroke-width="2"/>
+   <text x="${t.x}" y="${t.y+3}" font-size="7" fill="#fff" font-weight="bold" text-anchor="middle">${t.ini}</text>
+ </g>`).join('');
+
+/* ===== Reseñas ===== */
+document.getElementById('lista-resenas').innerHTML=RESENAS.map(r=>`
+ <div class="resena">
+   <div class="d-flex justify-content-between align-items-start mb-1 gap-2">
+     <div>
+       <span class="fw-bold" style="font-size:.86rem">${r.aut}</span>
+       <span class="dato">· vecino de ${r.zona}</span>
+       <div class="estrellas">${estrellas(r.est)}</div>
+     </div>
+     <span class="dato flex-shrink-0">${r.fec}</span>
+   </div>
+   <span class="badge badge-js text-bg-success mb-2"><i class="bi bi-patch-check-fill"></i> Servicio verificado</span>
+   <p class="mb-2" style="font-size:.82rem;line-height:1.5">${r.txt}</p>
+   <div class="row g-2">
+     ${r.f.map(([c,col])=>`<div class="col-6"><div class="foto-ev" style="background:${col}"><div><i class="bi bi-camera-fill d-block mb-1"></i>${c}</div></div></div>`).join('')}
+   </div>
+ </div>`).join('');
+
+/* ===== Distribución de estrellas ===== */
+document.getElementById('distrib').innerHTML=[[5,42,89,'#15803d'],[4,4,9,'#6ab187'],[3,1,2,'#d97706'],[2,0,0,'#adb5bd'],[1,0,0,'#adb5bd']]
+ .map(([e,c,pct,col])=>`
+ <div class="d-flex align-items-center gap-2 mb-1">
+   <span class="dato" style="width:12px">${e}</span><i class="bi bi-star-fill estrellas"></i>
+   <div class="barra flex-grow-1"><span style="width:${pct}%;background:${col}"></span></div>
+   <span class="dato" style="width:18px;text-align:right">${c}</span>
+ </div>`).join('');
+
+/* ===== QR decorativo determinista ===== */
+(function(){let s='',seed=4729;
+ for(let y=0;y<21;y++)for(let x=0;x<21;x++){
+   const esq=(x<7&&y<7)||(x>13&&y<7)||(x<7&&y>13);let on;
+   if(esq){const lx=x>13?x-14:x,ly=y>13?y-14:y;
+     on=(lx===0||lx===6||ly===0||ly===6)||(lx>1&&lx<5&&ly>1&&ly<5);}
+   else{seed=(seed*1103515245+12345)&0x7fffffff;on=(seed>>16)%100<45;}
+   if(on)s+=`<rect x="${x}" y="${y}" width="1" height="1"/>`;}
+ document.getElementById('qr-g').innerHTML=s;})();
+
+/* ===== Cotizador ===== */
+function cotizar(){
+  const o=document.getElementById('c-tipo').selectedOptions[0];
+  const dur=parseFloat(document.getElementById('c-dur').value);
+  const urg=parseFloat(document.getElementById('c-urg').value);
+  document.getElementById('c-monto').textContent=
+    `S/ ${Math.round(o.dataset.min*dur*urg)} a ${Math.round(o.dataset.max*dur*urg)}`;
+  document.getElementById('c-det').textContent=
+    `${dur===1?'Jornada completa de 8 h':'Media jornada de 4 h'}${urg>1?', con recargo por emergencia':''}. Materiales no incluidos.`;
+  document.getElementById('c-res').classList.remove('d-none');
+}
+
+/* ===== PIN ===== */
+function confirmarLlegada(){
+  document.getElementById('msg-pin').classList.remove('d-none');
+  const p3=document.getElementById('p3');
+  p3.className='paso ok';p3.innerHTML='<i class="bi bi-check"></i> Confirmado';
+  document.getElementById('p4').className='paso on';
+}
+
+/* ===== Notificaciones del técnico ===== */
+function pintarNotif(){
+  const s=SOLICITUDES[iNotif%SOLICITUDES.length];iNotif++;
+  const d=document.createElement('div');d.className='notif';
+  d.innerHTML=`
+   <div class="d-flex gap-2">
+     <i class="bi ${s.sos?'bi-exclamation-triangle-fill text-danger':'bi-tools text-secondary'} mt-1"></i>
+     <div class="flex-grow-1">
+       ${s.sos?'<span class="badge badge-js text-bg-danger mb-1">Emergencia, menos de 2 h</span>':''}
+       <div class="t">${s.t}</div><div class="d">${s.d}</div>
+       <div class="d-flex gap-2 mt-2">
+         <button class="btn btn-success btn-sm flex-fill fw-bold py-1" style="font-size:.74rem" onclick="aceptar(this)">Aceptar</button>
+         <button class="btn btn-light btn-sm flex-fill py-1" style="font-size:.74rem" onclick="this.closest('.notif').remove()">Rechazar</button>
+       </div>
+     </div>
+   </div>`;
+  document.getElementById('notifs').prepend(d);
+}
+function aceptar(btn){
+  btn.closest('.notif').innerHTML=
+   '<div class="d-flex gap-2 align-items-start"><i class="bi bi-check-circle-fill text-success mt-1"></i>'+
+   '<div><div class="t text-success">Solicitud aceptada</div>'+
+   '<div class="d">El vecino recibió tu confirmación. Se generó el PIN de llegada.</div></div></div>';
+}
+pintarNotif();pintarNotif();
+</script>
+</body>
+</html>
